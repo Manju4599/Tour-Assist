@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TourMind AI — Multilingual Travel Assistant</title>
+  <meta name="description" content="TourMind AI is a multilingual, vision-enabled tourist assistant. Chat in any language, upload photos of landmarks, use voice input, and translate in real time." />
+  <meta name="theme-color" content="#0f0a04" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div id="app">
+
+  <!-- ═══ SIDEBAR ════════════════════════════════════════════════════ -->
+  <aside id="sidebar" aria-label="Chat history sidebar">
+    <div class="sidebar-header">
+      <div class="logo-wrap">
+        <div class="logo-icon">✈️</div>
+        <div>
+          <div class="logo-text">TourMind AI</div>
+          <div class="logo-tagline">Multilingual Travel Assistant</div>
+        </div>
+      </div>
+      <button id="new-chat-btn" aria-label="Start new chat">
+        <span>✦</span> New Chat
+      </button>
+    </div>
+    <div class="sidebar-section-title">Chat History</div>
+    <div id="session-list" role="list" aria-label="Previous chat sessions">
+      <!-- Populated by JS -->
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN AREA ══════════════════════════════════════════════════ -->
+  <main id="main">
+
+    <!-- Header -->
+    <header id="header">
+      <button id="toggle-sidebar-btn" aria-label="Toggle sidebar">☰</button>
+      <div class="header-title-wrap">
+        <div class="header-title" id="chat-title">New Conversation</div>
+        <div class="header-subtitle" id="chat-subtitle">Ask anything about your destination</div>
+      </div>
+      <div class="header-controls">
+        <button id="voice-toggle-btn" class="pill-btn" aria-label="Toggle voice output" title="Toggle voice output">
+          <span id="voice-icon">🔇</span>
+          <span id="voice-label">Voice Off</span>
+        </button>
+        <button id="interpreter-toggle-btn" class="pill-btn" aria-label="Open interpreter mode" title="Interpreter mode">
+          <span>🌐</span> Interpreter
+        </button>
+      </div>
+    </header>
+
+    <!-- Chat Window -->
+    <div id="chat-window" role="log" aria-live="polite" aria-label="Conversation">
+      <!-- Welcome screen -->
+      <div id="welcome-screen">
+        <div class="welcome-orb">✈️</div>
+        <h1 class="welcome-title">Your Intelligent Travel Companion</h1>
+        <p class="welcome-subtitle">Ask in any language — text or voice. Upload landmarks for instant info. Translate conversations in real time.</p>
+        <div class="suggestion-grid" role="list" aria-label="Suggested questions">
+          <button class="suggestion-card" data-query="What are the must-visit places in Tokyo?" role="listitem">
+            <div class="s-icon">🗼</div>
+            <div class="s-text">Must-visit places in Tokyo</div>
+          </button>
+          <button class="suggestion-card" data-query="What local food should I try in Paris?" role="listitem">
+            <div class="s-icon">🥐</div>
+            <div class="s-text">Local food to try in Paris</div>
+          </button>
+          <button class="suggestion-card" data-query="தாஜ்மஹாலை பற்றி சொல்லுங்கள்" role="listitem">
+            <div class="s-icon">🕌</div>
+            <div class="s-text">தாஜ்மஹால் பற்றி (Tamil)</div>
+          </button>
+          <button class="suggestion-card" data-query="What currency should I carry for a trip to Bali?" role="listitem">
+            <div class="s-icon">💱</div>
+            <div class="s-text">Currency tips for Bali</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div id="status-bar" aria-live="polite">
+      <div class="status-dot" id="api-status-dot"></div>
+      <span id="api-status-text">Connecting…</span>
+      <span id="lang-detected-info"></span>
+    </div>
+
+    <!-- Input Area -->
+    <div id="input-area">
+      <div id="image-preview-bar" aria-label="Selected image preview">
+        <img id="img-preview-thumb" src="" alt="Preview" />
+        <span id="img-preview-name">image.jpg</span>
+        <button id="remove-img-btn" aria-label="Remove image">✕</button>
+      </div>
+      <div class="input-dock">
+        <textarea
+          id="msg-input"
+          placeholder="Ask anything in any language…"
+          rows="1"
+          aria-label="Message input"
+          autocomplete="off"
+          spellcheck="false"
+        ></textarea>
+        <div class="dock-actions">
+          <button id="mic-btn" class="dock-btn" aria-label="Voice input" title="Click to speak">🎤</button>
+          <button id="camera-btn" class="dock-btn" aria-label="Add image" title="Add photo or take picture">📷</button>
+          <button id="send-btn" aria-label="Send message" title="Send">➤</button>
+        </div>
+      </div>
+      <div class="input-hint">Press <kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> for new line</div>
+    </div>
+
+    <!-- Interpreter Panel (fixed, slides up) -->
+    <section id="interpreter-panel" aria-label="Interpreter mode" role="dialog">
+      <div class="interp-header">
+        <div class="interp-title">🌐 Real-Time Interpreter</div>
+        <button id="close-interp-btn" aria-label="Close interpreter">✕</button>
+      </div>
+      <div class="interp-body">
+        <!-- Source column -->
+        <div class="interp-col">
+          <div class="interp-lang-row">
+            <select id="from-lang" class="lang-select" aria-label="Source language">
+              <!-- Populated by JS -->
+            </select>
+            <button id="mic-interp-btn" class="dock-btn" style="flex-shrink:0;" aria-label="Voice input for interpreter" title="Speak to translate">🎤</button>
+          </div>
+          <textarea id="interp-input" class="interp-textarea" placeholder="Type or speak here…" aria-label="Text to translate"></textarea>
+          <div class="interp-actions">
+            <button id="translate-btn" class="interp-btn primary">⚡ Translate</button>
+            <button id="clear-interp-btn" class="interp-btn">🗑 Clear</button>
+          </div>
+        </div>
+
+        <!-- Swap -->
+        <button id="swap-langs-btn" aria-label="Swap languages" title="Swap languages">⇄</button>
+
+        <!-- Target column -->
+        <div class="interp-col">
+          <div class="interp-lang-row">
+            <select id="to-lang" class="lang-select" aria-label="Target language">
+              <!-- Populated by JS -->
+            </select>
+            <button id="tts-interp-btn" class="dock-btn" style="flex-shrink:0;" aria-label="Speak translation" title="Play translation">🔊</button>
+          </div>
+          <textarea id="interp-output" class="interp-textarea output-field" placeholder="Translation appears here…" readonly aria-label="Translation output"></textarea>
+          <div class="interp-actions">
+            <button id="copy-translation-btn" class="interp-btn">📋 Copy</button>
+            <button id="use-in-chat-btn" class="interp-btn">💬 Send to Chat</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- /main -->
+</div><!-- /app -->
+
+<!-- Camera Modal -->
+<div id="camera-modal" role="dialog" aria-modal="true" aria-label="Camera capture">
+  <div class="camera-box">
+    <div class="camera-header">
+      <div class="camera-title">📷 Capture Image</div>
+      <button id="close-camera-btn" aria-label="Close camera">✕</button>
+    </div>
+    <video id="camera-video" autoplay playsinline></video>
+    <canvas id="camera-canvas" style="display:none;"></canvas>
+    <div class="camera-btns">
+      <button id="capture-btn">📸 Capture</button>
+      <button id="upload-instead-btn">📂 Upload File</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden file input -->
+<input type="file" id="file-input" accept="image/*" style="display:none;" aria-label="Upload image file" />
+
+<!-- Toast container -->
+<div id="toast-container" aria-live="assertive" aria-atomic="true"></div>
+
+<script src="main.js"></script>
+</body>
+</html>
