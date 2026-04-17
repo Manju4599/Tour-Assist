@@ -1,0 +1,4 @@
+# 1. Navigate to your backend directory
+cd "c:\Users\Manjunath\projects\tour assist\backend"
+# 2. Start the FastAPI server
+uvicorn main:app --reload
