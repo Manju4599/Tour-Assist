@@ -1,0 +1,48 @@
+## NLP Algorithms Used
+
+1. 🔍 Language Detection — `langdetect` library
+
+language_detector.py`
+
+-Algorithm: Naïve Bayes classifier with n-gram language profiles
+- `langdetect` is a Python port of Google's language-detection library
+
+- It works by:
+  1. Breaking the input text into character n-grams (sequences of characters)
+  2. Comparing them against pre-built language profiles for 55+ languages
+  3. Using a probabilistic Naïve Bayes model to rank and pick the best-matching language
+- Supports 25+ languages in this project (Tamil, Hindi, Japanese, Arabic, etc.)
+
+```python
+from langdetect import detect
+code = detect(text)   # e.g., returns "ta" for Tamil, "hi" for Hindi
+```
+
+---
+
+ 2. 🌐 Machine Translation — Gemini LLM (Large Language Model)
+ `interpreter.py`
+
+- **Algorithm:Transformer-based Neural Machine Translation (NMT)
+- Uses Google's Gemini 2.5 Flash model under the hood
+- This is a massive attention-based transformer that understands context, tone, and meaning across languages
+- Called via prompt engineering — no traditional NLP library involved
+
+---
+
+3. 🤖 Multilingual Chat + Vision — Gemini LLM
+ `main.py`
+
+- Also uses **Gemini 2.5 Flash** for understanding tourist queries, analyzing landmark images, and auto-responding in the user's detected language (combining NLU + NLG)
+
+---
+
+## Summary Table
+
+| NLP Task | Algorithm | Library/Model | File |
+|----------|-----------|---------------|------|
+| Language Detection | Naïve Bayes + N-gram profiles | `langdetect` | `language_detector.py` |
+| Text Translation | Transformer NMT | Gemini 2.5 Flash | `interpreter.py` |
+| Chat / Vision QA | LLM (NLU + NLG) | Gemini 2.5 Flash | `main.py` |
+
+The **core classical NLP** algorithm is in `language_detector.py`, while `interpreter.py` and `main.py` rely on Gemini's neural transformer for everything else.
